@@ -11,10 +11,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class PluginChimney extends JavaPlugin {
 	private List<Chimney> chimneys = new ArrayList<Chimney>();
-	private final CBlockListener blockListener;
+	private CBlockListener blockListener;
 	private int task;
 	public PluginChimney() {
-		blockListener = new CBlockListener(this);
+
 	}
 
 	@Override
@@ -26,6 +26,7 @@ public class PluginChimney extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
+		blockListener = new CBlockListener(this);
 		List<Chimney> c = DataManager.load();
 		if(c == null) 
 			DataManager.save(chimneys);
@@ -35,19 +36,10 @@ public class PluginChimney extends JavaPlugin {
 		getCommand("chimney").setExecutor(new ChimneyCommand(this));
 		getServer().getPluginManager().registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Monitor, this);	
 		System.out.println("Chimneys "+getDescription().getVersion()+" is enabled");
-		task = getServer().getScheduler().scheduleAsyncRepeatingTask(this, new ChimneyUpdateTask(this), 1L, 1L);
+		task = getServer().getScheduler().scheduleAsyncRepeatingTask(this, new ChimneyUpdateTask(this), 5L, 5L);
 	}
-	public synchronized boolean isChimney(Block block){
-		for(Chimney chimney : chimneys){
-			if(chimney.getX() == block.getX() && chimney.getY() == block.getY() && chimney.getZ() == block.getZ())
-				return true;
-			
-			
-		}
-		return false;
-	}
-	public synchronized void createChimney(Block block, int smokes,int freq){
-		chimneys.add(new Chimney(block, smokes, freq));
+	public synchronized void createChimney(Block block, int smokes){
+		chimneys.add(new Chimney(block, smokes));
 	}
 	public synchronized void deleteChimney(Block block){
 		for(Chimney chimney : chimneys){
@@ -59,10 +51,11 @@ public class PluginChimney extends JavaPlugin {
 			
 		}
 	}
-	public List<Chimney> getChimneys(){
+	public synchronized List<Chimney> getChimneys(){
 		ArrayList<Chimney> result = new ArrayList<Chimney>();
 		result.addAll(chimneys);
 		return result;
 		
 	}
+
 }

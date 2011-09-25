@@ -36,10 +36,10 @@ public class ChimneyCommand implements CommandExecutor {
 			if(args[0].equalsIgnoreCase("help")){
 				sender.sendMessage(ChatColor.RED+"/chimney [tgt | std] - Creates chimney at your target block(tgt) or block you're standing on(std)");
 			}else if(args[0].equalsIgnoreCase("std")){
-				plugin.createChimney(player.getLocation().getBlock().getRelative(BlockFace.DOWN), 5, 15);
+				plugin.createChimney(player.getLocation().getBlock().getRelative(BlockFace.DOWN), 9);
 				sender.sendMessage(ChatColor.GREEN+"Chimney was create on block you're standing on");
 			}else if(args[0].equalsIgnoreCase("tgt")){
-				plugin.createChimney(player.getTargetBlock(ignored, 15), 5, 15);
+				plugin.createChimney(player.getTargetBlock(ignored, 15), 9);
 				sender.sendMessage(ChatColor.GREEN+"Chimney was create on block you're aiming on");
 			}
 		}

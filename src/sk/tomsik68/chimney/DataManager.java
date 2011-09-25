@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class DataManager {
-	public static final File dataFile = new File("plugins\\Chimneys\\data.bin");
+	public static final File dataFile = new File("plugins"+File.separator+"Chimneys"+File.separator+"data.bin");
 	public static <T extends Object> T load(){
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dataFile));

@@ -1,0 +1,10 @@
+name: Chimneys
+main: sk.tomsik68.chimney.PluginChimney
+description: Chimneys
+author: tomsik68
+version: 0.2
+
+commands:
+    chimney:
+        description: Create chimneys
+        usage: /<command> [std | tgt]

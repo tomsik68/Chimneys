@@ -10,8 +10,6 @@ public class CBlockListener extends BlockListener {
 	}
 	@Override
 	public void onBlockBreak(BlockBreakEvent event) {
-		if(plugin.isChimney(event.getBlock())){
-			plugin.deleteChimney(event.getBlock());
-		}
+		plugin.deleteChimney(event.getBlock());
 	}
 }

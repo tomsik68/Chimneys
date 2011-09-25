@@ -1,5 +1,7 @@
 package sk.tomsik68.chimney;
 
+import java.util.List;
+
 public class ChimneyUpdateTask implements Runnable {
 	private final PluginChimney plugin;
 	public ChimneyUpdateTask(PluginChimney pluginChimney) {
@@ -8,7 +10,8 @@ public class ChimneyUpdateTask implements Runnable {
 
 	@Override
 	public void run() {
-		for(Chimney chimney : plugin.getChimneys()){
+		List<Chimney> chimneys= plugin.getChimneys();
+		for(Chimney chimney : chimneys){
 			chimney.update();
 		}
 	}
