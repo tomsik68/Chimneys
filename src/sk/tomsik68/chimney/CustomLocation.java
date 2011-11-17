@@ -48,8 +48,8 @@ public class CustomLocation implements Serializable {
 		if (obj instanceof CustomLocation) {
 			CustomLocation cl = (CustomLocation) obj;
 			return cl.getX() == x && cl.getY() == y && cl.getZ() == z && cl.getWorld().equals(world);
-		} else
-			return false;
+		}
+		return false;
 	}
 
 	/**

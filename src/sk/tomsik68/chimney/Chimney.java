@@ -75,7 +75,7 @@ public class Chimney implements Serializable {
 		if (world == null)
 			return;
 		// don't need to update if we haven't got the chunk loaded or if there aren't players
-		if (!world.getChunkAt(new Location(world, x, y, z)).isLoaded() || world.getPlayers().isEmpty()) {
+		if (!world.getChunkAt(new Location(world, x, y, z)).isLoaded() || !Util.hasPlayers(world)) {
 			return;
 		}
 		for (int i = 0; i < smokeCount; i++) {

@@ -14,11 +14,11 @@ public class ChimneyUpdateTask implements Runnable {
 	public void run() {
 		Collection<Set<Chimney>> chimneys = Collections.synchronizedCollection(plugin.getChimneys());
 		synchronized(chimneys){
-		for(Set<Chimney> c : chimneys){
-			for(Chimney chimney : c){
-				chimney.update();
+			for(Set<Chimney> c : chimneys){
+				for(Chimney chimney : c){
+					chimney.update();
+				}
 			}
-		}
 		}
 	}
 }

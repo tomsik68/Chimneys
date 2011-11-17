@@ -2,10 +2,15 @@ name: Chimneys
 main: sk.tomsik68.chimney.PluginChimney
 description: Chimneys
 author: tomsik68
-version: 0.2b5
+version: 0.2b8
 
 commands:
     chimney:
         description: Create chimneys
         aliases: /ch, /chmn
         usage: /<command> [std | tgt] [rs]
+permissions:
+    chimneys.create:
+        description: Creating chimneys
+    chimneys.wand.get:
+        description: Allows you to get wand using /chimney wand

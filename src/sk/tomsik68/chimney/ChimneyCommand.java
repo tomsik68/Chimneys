@@ -37,18 +37,18 @@ public class ChimneyCommand implements CommandExecutor {
 		}else if(args.length == 1){
 			if(args[0].equalsIgnoreCase("help")){
 				sender.sendMessage(ChatColor.RED+"/chimney [tgt | std] - Creates chimney at your target block(tgt) or block you're standing on(std)");
-			}else if(args[0].equalsIgnoreCase("std")){
+			}else if(args[0].equalsIgnoreCase("std") && sender.hasPermission("chimneys.create")){
 				plugin.createChimney(player.getLocation().getBlock().getRelative(BlockFace.DOWN),BlockFace.UP,false);
 				sender.sendMessage(ChatColor.GREEN+"Chimney was created on block you're standing on");
-			}else if(args[0].equalsIgnoreCase("tgt")){
+			}else if(args[0].equalsIgnoreCase("tgt")&& sender.hasPermission("chimneys.create")){
 				plugin.createChimney(player.getTargetBlock(ignored, 15),BlockFace.UP,false);
 				sender.sendMessage(ChatColor.GREEN+"Chimney was created on block you're aiming on");
-			}else if(args[0].equalsIgnoreCase("wand")){
+			}else if(args[0].equalsIgnoreCase("wand")&& sender.hasPermission("chimneys.wand.get")){
 				player.getInventory().addItem(new ItemStack(plugin.getWand()));
-				sender.sendMessage(ChatColor.GREEN+"There you go chimney wand! (Wand name is: "+plugin.getWand().name().toLowerCase()+")");
+				sender.sendMessage(ChatColor.GREEN+"There you go chimney wand! (Wand name is: "+ChatColor.GRAY+plugin.getWand().name().toLowerCase()+")");
 			}
 		}else if(args.length == 2){
-			if(args[1].equalsIgnoreCase("rs")){
+			if(args[1].equalsIgnoreCase("rs")&& sender.hasPermission("chimneys.create")){
 				if(args[0].equalsIgnoreCase("std")){
 					plugin.createChimney(player.getLocation().getBlock().getRelative(BlockFace.DOWN),BlockFace.UP,true);
 					sender.sendMessage(ChatColor.GREEN+"Redstone controlled chimney was created on block you're standing on");

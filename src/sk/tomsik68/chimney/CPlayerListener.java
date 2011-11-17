@@ -15,7 +15,7 @@ public class CPlayerListener extends PlayerListener {
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if (event.getItem() != null && event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getTypeId() == plugin.getWand().getId()) {
 			plugin.createChimney(event.getClickedBlock(), event.getBlockFace(), false);
-			event.getPlayer().sendMessage("BlockFace clicked: " + event.getBlockFace().name());
+			event.setCancelled(true);
 		}
 	}
 }

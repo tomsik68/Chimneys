@@ -94,7 +94,7 @@ public class PluginChimney extends JavaPlugin {
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		@SuppressWarnings("unchecked")
-		List<String> list = (List<String>) config.getList("block-blacklist");
+		List<String> list = config.getList("block-blacklist");
 		if (list != null) {
 			for (String s : list) {
 				bblist.add(Integer.valueOf(s));
