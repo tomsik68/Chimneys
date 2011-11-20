@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -59,7 +60,7 @@ public class PluginChimney extends JavaPlugin {
 		else
 			chimneys = c;
 		getCommand("chimney").setExecutor(new ChimneyCommand(this));
-		FileConfiguration config = getConfig();
+		FileConfiguration config = YamlConfiguration.loadConfiguration(new File(getDataFolder(),"config.yml"));
 		if (!config.contains("chimney.smokes")) {
 			config.set("chimney.smokes", 5);
 			config.set("chimney.frequency", 15);
