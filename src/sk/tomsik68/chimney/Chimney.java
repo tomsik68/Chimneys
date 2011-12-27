@@ -12,6 +12,7 @@ import org.bukkit.block.BlockFace;
 
 public class Chimney implements Serializable {
 	private static final long serialVersionUID = 5486728493060322647L;
+	private static final int HEIGHT = 2;
 	private final int x, y, z, face;
 	private int smokeCount;
 	private final UUID worldId;
@@ -78,8 +79,17 @@ public class Chimney implements Serializable {
 		if (!world.getChunkAt(new Location(world, x, y, z)).isLoaded() || !Util.hasPlayers(world)) {
 			return;
 		}
+		//implementation of height
 		for (int i = 0; i < smokeCount; i++) {
-			Util.playEffect(new Location(world, x, (face == 4 ? (y + 1) : y), z), Effect.SMOKE, face, ((PluginChimney) Bukkit.getPluginManager().getPlugin("Chimneys")).getRadius());
+			// we start above the block, so h = 1
+			double h = 0;
+			while(h<HEIGHT){
+				Location loc = new Location(world, x, (face == 4 ? (y + h +1) : y), z);
+				Util.playEffect(loc, Effect.SMOKE, face, ((PluginChimney) Bukkit.getPluginManager().getPlugin("Chimneys")).getRadius());
+				if(face != 4)
+					break;
+				h += 0.1D;
+			}
 		}
 	}
 

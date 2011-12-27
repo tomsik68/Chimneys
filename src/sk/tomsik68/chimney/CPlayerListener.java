@@ -13,7 +13,7 @@ public class CPlayerListener extends PlayerListener {
 
 	@Override
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		if (event.getItem() != null && event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getTypeId() == plugin.getWand().getId()) {
+		if (plugin.perms.getPermissor().has(event.getPlayer(), "chimneys.create.wand") && event.getItem() != null && event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getTypeId() == plugin.getWand().getId()) {
 			plugin.createChimney(event.getClickedBlock(), event.getBlockFace(), false);
 			event.setCancelled(true);
 		}

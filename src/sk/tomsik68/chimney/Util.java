@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.server.Entity;
-import net.minecraft.server.Packet61;
+import net.minecraft.server.Packet61WorldEvent;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -23,11 +23,11 @@ public class Util {
 				int distance = (int) p.getLocation().distance(location);
 				if (distance <= radius) {
 					CraftPlayer player = (CraftPlayer) p;
-					Packet61 packet = new Packet61(effect.getId(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), data);
+					Packet61WorldEvent packet = new Packet61WorldEvent(effect.getId(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), data);
 					try{
 						player.getHandle().netServerHandler.sendPacket(packet);
 					}catch(Exception e){
-						//player has disconnected before this proccess - do nothing
+						//player has probably disconnected before this proccess - do nothing
 					}
 				}
 
@@ -40,7 +40,7 @@ public class Util {
 		@SuppressWarnings("unchecked")
 		List<Entity> entities = new ArrayList<Entity>(world.getHandle().entityList);
 		for(Entity e : entities){
-			if(e.getBukkitEntity() != null && e.getBukkitEntity() instanceof Player){
+			if(e != null && e.getBukkitEntity() != null && e.getBukkitEntity() instanceof Player){
 				result.add((Player)e.getBukkitEntity());
 			}
 		}

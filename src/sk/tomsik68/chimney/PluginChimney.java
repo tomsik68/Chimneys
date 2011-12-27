@@ -22,15 +22,17 @@ import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import sk.tomsik68.permsguru.EPermissionSystem;
+
 public class PluginChimney extends JavaPlugin {
 	private Map<CustomLocation, Set<Chimney>> chimneys = new HashMap<CustomLocation, Set<Chimney>>();
 	private int frequency = 15, smokeCount = 5, radius = 48;
 	// Block blacklist
-	private Set<Integer> bblist = new HashSet<Integer>();
+	private Set<Byte> bblist = new HashSet<Byte>();
 	private CBlockListener blockListener;
 	private CPlayerListener playerListener;
 	private Material wand;
-
+	public EPermissionSystem perms; 
 	public PluginChimney() {
 
 	}
@@ -66,6 +68,8 @@ public class PluginChimney extends JavaPlugin {
 			config.set("chimney.frequency", 15);
 			config.set("chimney.radius", 48);
 			config.set("chimney.wand", Material.STICK.name().toLowerCase());
+			config.set("perms", EPermissionSystem.OP.name());
+			config.set("block-blacklist", bblist);
 			try {
 				config.save(new File(getDataFolder(), "config.yml"));
 			} catch (IOException e) {
@@ -77,6 +81,8 @@ public class PluginChimney extends JavaPlugin {
 		smokeCount = config.getInt("chimney.frequency", 15);
 		radius = config.getInt("chimney.radius", 48);
 		String wnd = config.getString("chimney.wand", "" + Material.STICK.name().toLowerCase());
+		perms = EPermissionSystem.valueOf((String) config.get("perms","OP"));
+		perms.getPermissor().setup(getServer());
 		try {
 			wand = Material.getMaterial(Integer.valueOf(wnd));
 		} catch (Exception e) {
@@ -98,7 +104,7 @@ public class PluginChimney extends JavaPlugin {
 		List<String> list = config.getList("block-blacklist");
 		if (list != null) {
 			for (String s : list) {
-				bblist.add(Integer.valueOf(s));
+				bblist.add(Byte.parseByte(s));
 			}
 		}
 	}

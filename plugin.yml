@@ -2,7 +2,7 @@ name: Chimneys
 main: sk.tomsik68.chimney.PluginChimney
 description: Chimneys
 author: tomsik68
-version: 0.2
+version: 0.31
 
 commands:
     chimney:
@@ -12,5 +12,8 @@ commands:
 permissions:
     chimneys.create:
         description: Creating chimneys
+    chimneys.create.wand:
+        description: Creating chimneys using wand
     chimneys.wand.get:
         description: Allows you to get wand using /chimney wand
+    
