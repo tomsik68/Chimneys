@@ -53,7 +53,7 @@ public class Util {
 		@SuppressWarnings("unchecked")
 		List<Entity> entities = new ArrayList<Entity>(world.getHandle().entityList);
 		for(Entity e : entities){
-			if(e.getBukkitEntity() != null && e.getBukkitEntity() instanceof Player){
+			if(e != null && e.getBukkitEntity() != null && e.getBukkitEntity() instanceof Player){
 				return true;
 			}
 		}
