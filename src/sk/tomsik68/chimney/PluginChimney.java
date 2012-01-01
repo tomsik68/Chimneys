@@ -33,6 +33,7 @@ public class PluginChimney extends JavaPlugin {
 	private CPlayerListener playerListener;
 	private Material wand;
 	public EPermissionSystem perms; 
+	private boolean rsDefOn = true;
 	public PluginChimney() {
 
 	}
@@ -68,6 +69,7 @@ public class PluginChimney extends JavaPlugin {
 			config.set("chimney.frequency", 15);
 			config.set("chimney.radius", 48);
 			config.set("chimney.wand", Material.STICK.name().toLowerCase());
+			config.set("rs-def-on", true);
 			config.set("perms", EPermissionSystem.OP.name());
 			config.set("block-blacklist", bblist);
 			try {
@@ -83,6 +85,7 @@ public class PluginChimney extends JavaPlugin {
 		String wnd = config.getString("chimney.wand", "" + Material.STICK.name().toLowerCase());
 		perms = EPermissionSystem.valueOf((String) config.get("perms","OP"));
 		perms.getPermissor().setup(getServer());
+		rsDefOn = config.getBoolean("rs-def-on");
 		try {
 			wand = Material.getMaterial(Integer.valueOf(wnd));
 		} catch (Exception e) {
@@ -150,7 +153,7 @@ public class PluginChimney extends JavaPlugin {
 				Set<Chimney> toUpdate = chimneys.get(loc);
 				Set<Chimney> updated = new HashSet<Chimney>();
 				for (Chimney chimney : toUpdate) {
-					if (block.isBlockPowered() || block.isBlockIndirectlyPowered() || block.getBlockPower() > 0) {
+					if ((rsDefOn && (block.isBlockPowered() || block.isBlockIndirectlyPowered() || block.getBlockPower() > 0)) || !rsDefOn) {
 						chimney.setSmokeCount(smokeCount);
 					} else {
 						chimney.setSmokeCount(0);

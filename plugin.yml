@@ -2,13 +2,14 @@ name: Chimneys
 main: sk.tomsik68.chimney.PluginChimney
 description: Chimneys
 author: tomsik68
-version: 0.31
+version: 0.32
 
 commands:
     chimney:
         description: Create chimneys
         aliases: /ch, /chmn
         usage: /<command> [std | tgt] [rs]
+        permission: chimneys.create
 permissions:
     chimneys.create:
         description: Creating chimneys

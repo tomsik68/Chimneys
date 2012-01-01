@@ -29,6 +29,9 @@ public class PermissionsPermissor implements Permissor {
 
 	@Override
 	public boolean has(Player player, String node) {
+		if(handler == null) {
+			return player.isOp();
+		}
 		return handler.has(player, node);
 	}
 
@@ -37,8 +40,10 @@ public class PermissionsPermissor implements Permissor {
 		Plugin test = server.getPluginManager().getPlugin("Permissions");
 		if(test != null && test instanceof Permissions){
 			handler = ((Permissions)test).getHandler();
+			System.out.println("[Chimneys] Hooked into Permissions");
 			return true;
 		}
+		System.out.println("[Chimneys] Permissions not found. Please set perms in config.yml to \"OP\" or \"Server\"");
 		return false;
 	}
 }
