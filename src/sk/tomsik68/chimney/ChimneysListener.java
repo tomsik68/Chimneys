@@ -14,30 +14,38 @@
     along with Chimneys.  If not, see <http://www.gnu.org/licenses/>.*/
 package sk.tomsik68.chimney;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
-public class CBlockListener extends BlockListener {
+public class ChimneysListener implements Listener {
 	private final PluginChimney plugin;
 
-	public CBlockListener(PluginChimney pc) {
+	public ChimneysListener(PluginChimney pc) {
 		plugin = pc;
 	}
-
-	@Override
+	@EventHandler(priority=EventPriority.MONITOR)
 	public void onBlockBreak(BlockBreakEvent event) {
 		plugin.deleteChimney(event.getBlock());
 	}
-
-	@Override
+	@EventHandler(priority=EventPriority.MONITOR)
 	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
 		plugin.changeRS(event.getBlock());
 	}
-
-	@Override
+	@EventHandler(priority=EventPriority.MONITOR)
 	public void onBlockBurn(BlockBurnEvent event) {
 		plugin.deleteChimney(event.getBlock());
+	}
+	@EventHandler(priority=EventPriority.HIGHEST)
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (plugin.perms.has(event.getPlayer(), "chimneys.create.wand") && event.getItem() != null && event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getTypeId() == plugin.getWand().getId()) {
+			plugin.createChimney(event.getClickedBlock(), false);
+			event.setCancelled(true);
+		}
 	}
 }

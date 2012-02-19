@@ -35,7 +35,6 @@ public class CustomLocation implements Serializable {
 	public CustomLocation(Block block) {
 		this(block.getX(), block.getY(), block.getZ(), block.getWorld().getUID());
 	}
-
 	/**
 	 * @return the x
 	 */

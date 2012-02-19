@@ -14,21 +14,8 @@
     along with Chimneys.  If not, see <http://www.gnu.org/licenses/>.*/
 package sk.tomsik68.permsguru;
 
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
-public class ServerPermissor implements Permissor {
-	public ServerPermissor() {
-
-	}
-
-	@Override
-	public boolean has(Player player, String node) {
-		return player.hasPermission(node);
-	}
-
-	@Override
-	public boolean setup(Server server) {
-		return true;
-	}
+public abstract class PermissionService {
+	public abstract boolean hasPermission(Player player,String node);
 }

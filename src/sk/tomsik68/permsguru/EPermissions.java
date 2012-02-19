@@ -14,10 +14,35 @@
     along with Chimneys.  If not, see <http://www.gnu.org/licenses/>.*/
 package sk.tomsik68.permsguru;
 
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
-public interface Permissor {
-	public boolean has(Player player,String node);
-	public boolean setup(Server server);
+public enum EPermissions {
+	None(new PermissionService(){
+
+		@Override
+		public boolean hasPermission(Player player, String node) {
+			return true;
+		}
+	}),
+	OP(new PermissionService(){
+
+		@Override
+		public boolean hasPermission(Player player, String node) {
+			return player.isOp();
+		}
+	}),
+	SP(new PermissionService(){
+
+		@Override
+		public boolean hasPermission(Player player, String node) {
+			return player.hasPermission(node);
+		}
+	});
+	private final PermissionService p;
+	private EPermissions(PermissionService ps){
+		p = ps;
+	}
+	public boolean has(Player player,String node){
+		return p.hasPermission(player, node);
+	}
 }

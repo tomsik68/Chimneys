@@ -1,17 +1,9 @@
-/*    This file is part of Chimneys.
-
-    Chimneys is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    Chimneys is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Chimneys.  If not, see <http://www.gnu.org/licenses/>.*/
+/*
+ * This file is part of Chimneys. Chimneys is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any later version. Chimneys is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received
+ * a copy of the GNU General Public License along with Chimneys. If not, see <http://www.gnu.org/licenses/>.
+ */
 package sk.tomsik68.chimney;
 
 import java.io.Serializable;
@@ -22,20 +14,26 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 
+/** Used to load an old files.
+ * 
+ * @author Tomsik68
+ *
+ */
 public class Chimney implements Serializable {
 	private static final long serialVersionUID = 5486728493060322647L;
-	private final int x, y, z, face;
+	private int x, y, z;
+	//unused, but kept not to destroy save structure
+	private int face;
 	private int smokeCount;
-	private final UUID worldId;
-	private final boolean redstone;
-
-	public Chimney(Block block, BlockFace bf, int smokes, boolean redstone) {
+	private UUID worldId;
+	private boolean redstone;
+	public Chimney(Block block, /*BlockFace bf,*/ int smokes, boolean redstone) {
+		face = 0;
 		x = block.getX();
 		y = block.getY();
 		z = block.getZ();
-		switch (bf) {
+		/*switch (bf) {
 			case EAST:
 				face = 1;
 			break;
@@ -51,7 +49,7 @@ public class Chimney implements Serializable {
 			default:
 				face = 4;
 			break;
-		}
+		}*/
 		setSmokeCount(smokes);
 		worldId = block.getWorld().getUID();
 		this.redstone = redstone;
@@ -92,12 +90,9 @@ public class Chimney implements Serializable {
 		if (!world.getChunkAt(new Location(world, x, y, z)).isLoaded() || !Util.hasPlayers(world)) {
 			return;
 		}
-		//implementation of height
+		Location loc = new Location(world, x, y+1, z);
 		for (int i = 0; i < smokeCount; i++) {
-				Location loc = new Location(world, x, (face == 4 ? (y +1) : y), z);
-				Util.playEffect(loc, Effect.SMOKE, face, ((PluginChimney) Bukkit.getPluginManager().getPlugin("Chimneys")).getRadius());
-				if(face != 4)
-					break;
+			Util.playEffect(loc, Effect.SMOKE, 0, ((PluginChimney) Bukkit.getPluginManager().getPlugin("Chimneys")).getRadius());
 		}
 	}
 

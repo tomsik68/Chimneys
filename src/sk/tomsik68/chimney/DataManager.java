@@ -33,7 +33,6 @@ public class DataManager {
 			@SuppressWarnings("unchecked")
 			T result = (T) ois.readObject();
 			ois.close();
-			save(result);
 			return result;
 		} catch (Exception e) {
 			System.out.println("= CHIMNEYS: LOADING ERROR =");

@@ -37,7 +37,7 @@ public class Util {
 				int distance = (int) p.getLocation().distance(location);
 				if (distance <= radius) {
 					CraftPlayer player = (CraftPlayer) p;
-					Packet61WorldEvent packet = new Packet61WorldEvent(effect.getId(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), data);
+					Packet61WorldEvent packet = new Packet61WorldEvent(effect.getId(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), 4);
 					try{
 						player.getHandle().netServerHandler.sendPacket(packet);
 					}catch(Exception e){
