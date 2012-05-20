@@ -15,11 +15,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-/** Used to load an old files.
- * 
- * @author Tomsik68
- *
- */
 public class Chimney implements Serializable {
 	private static final long serialVersionUID = 5486728493060322647L;
 	private int x, y, z;
@@ -29,7 +24,7 @@ public class Chimney implements Serializable {
 	private UUID worldId;
 	private boolean redstone;
 	public Chimney(Block block, /*BlockFace bf,*/ int smokes, boolean redstone) {
-		face = 0;
+		face = 4;
 		x = block.getX();
 		y = block.getY();
 		z = block.getZ();
@@ -55,13 +50,13 @@ public class Chimney implements Serializable {
 		this.redstone = redstone;
 	}
 
-	public Chimney(int x, int y, int z, int face, int smokes, boolean redstone, UUID world) {
+	public Chimney(int x, int y, int z, int face, int smokes, boolean rs, UUID world) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.face = face;
 		this.smokeCount = smokes;
-		this.redstone = redstone;
+		this.redstone = rs;
 		worldId = world;
 	}
 
@@ -87,10 +82,10 @@ public class Chimney implements Serializable {
 		if (world == null)
 			return;
 		// don't need to update if we haven't got the chunk loaded or if there aren't players
-		if (!world.getChunkAt(new Location(world, x, y, z)).isLoaded() || !Util.hasPlayers(world)) {
+		Location loc = new Location(world, x, y+1, z);
+		if (world.getChunkAt(loc) == null || !world.getChunkAt(loc).isLoaded() || !Util.hasPlayers(world)) {
 			return;
 		}
-		Location loc = new Location(world, x, y+1, z);
 		for (int i = 0; i < smokeCount; i++) {
 			Util.playEffect(loc, Effect.SMOKE, 0, ((PluginChimney) Bukkit.getPluginManager().getPlugin("Chimneys")).getRadius());
 		}

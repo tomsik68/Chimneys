@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -27,13 +27,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import sk.tomsik68.permsguru.EPermissions;
 
 public class PluginChimney extends JavaPlugin {
 	private Map<CustomLocation, Chimney> chimneys = new HashMap<CustomLocation, Chimney>();
+	private HashSet<Integer> wandPlayers = new HashSet<Integer>();
 	private int frequency = 16, smokeCount = 5, radius = 48;
 	// Block blacklist
 	private final Set<Byte> bblist = new HashSet<Byte>();
@@ -50,9 +50,9 @@ public class PluginChimney extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		DataManager.save(chimneys);
 		getServer().getScheduler().cancelTask(task);
-		System.out.println("Chimneys " + getDescription().getVersion()
-				+ " is disabled");
+		System.out.println("Chimneys " + getDescription().getVersion() + " is disabled");
 	}
 
 	@Override
@@ -60,39 +60,20 @@ public class PluginChimney extends JavaPlugin {
 		try {
 			Class.forName("org.bukkit.craftbukkit.CraftServer");
 		} catch (ClassNotFoundException e) {
-			System.out
-					.println("Chimneys can't be enabled. You're probably not running a craftbukkit server.");
+			System.out.println("Chimneys can't be enabled. You're probably not running a craftbukkit server.");
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		listener = new ChimneysListener(this);
 		getServer().getPluginManager().registerEvents(listener, this);
 		if (!getDataFolder().exists())
 			getDataFolder().mkdir();
-		try{
-			
-		}catch(ClassCastException cce){
-			try{
-			System.out.println("[Chimneys] Detected old save format, but that's fine. Converting...");
-			Map<CustomLocation, Set<Chimney>> c = DataManager.load();
-			if (c != null) {
-				for(Entry<CustomLocation,Set<Chimney>> entry : c.entrySet()){
-					chimneys.put(entry.getKey(),entry.getValue().iterator().next());
-				}
-			}
-			}catch (Exception e) {
-				System.out.println("[Chimneys] Old save format conversion failed, but your data file should be fine. Here's stack trace: ");
-				e.printStackTrace();
-				System.out.println("[Chimneys] end of error");
-			}
-		}
-		getCommand("chimney").setExecutor(this);
-		FileConfiguration config = YamlConfiguration
-				.loadConfiguration(new File(getDataFolder(), "config.yml"));
+
+		FileConfiguration config = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "config.yml"));
 		if (!config.contains("chimney.smokes")) {
 			config.set("chimney.smokes", 5);
 			config.set("chimney.frequency", 15);
 			config.set("chimney.radius", 48);
-			config.set("chimney.wand", Material.STICK.name().toLowerCase());
+			config.set("chimney.wand", "stick");
 			config.set("rs-def-on", true);
 			config.set("perms", EPermissions.OP.name());
 			config.set("block-blacklist", bblist);
@@ -106,32 +87,63 @@ public class PluginChimney extends JavaPlugin {
 		frequency = config.getInt("chimney.smokes", 5);
 		smokeCount = config.getInt("chimney.frequency", 15);
 		radius = config.getInt("chimney.radius", 48);
-		wand = parseMaterial(config.getString("chimney.wand", ""
-				+ Material.STICK.name().toLowerCase()));
+		wand = parseMaterial(config.getString("chimney.wand", "stick"));
 		perms = EPermissions.valueOf((String) config.get("perms", "SP"));
 		rsDefOn = config.getBoolean("rs-def-on");
 
-		task = getServer().getScheduler().scheduleAsyncRepeatingTask(this,
-				new ChimneyUpdateTask(this), frequency, frequency);
-		if (task == -1) {
-			System.out
-					.println("[Chimneys] Task scheduling failed, plugin can't work.");
-			getServer().getPluginManager().disablePlugin(this);
-			return;
+		try {
+			chimneys = DataManager.load();
+			System.out.println("[Chimneys] Checking the data file for errors...");
+			for (Entry<CustomLocation, Chimney> entry : chimneys.entrySet()) {
+				if (Bukkit.getWorld(entry.getKey().getWorld()) == null) {
+					entry.getValue().setSmokeCount(0);
+				}
+				if (entry.getValue() == null) {
+					chimneys.remove(entry.getKey());
+					chimneys.put(entry.getKey(), new Chimney(entry.getKey().getBlock(), smokeCount, false));
+					System.out.println("[Chimneys] Found & fixed error.");
+				}
+			}
+		} catch (ClassCastException cce) {
+			try {
+				System.out.println("[Chimneys] Detected old save format, but that's fine. Converting...");
+				Map<CustomLocation, Set<Chimney>> c = DataManager.load();
+				if (c != null) {
+					for (Entry<CustomLocation, Set<Chimney>> entry : c.entrySet()) {
+						chimneys.put(entry.getKey(), entry.getValue().iterator().next());
+					}
+				}
+			} catch (Exception e) {
+				System.out.println("[Chimneys] Old save format conversion failed, but your data file should be fine. Here's stack trace: ");
+				e.printStackTrace();
+				System.out.println("[Chimneys] end of error");
+			}
+		} catch (NullPointerException npe) {
+			System.out.println("[Chimneys] Invalid/Corrupted data file. Nevermind, overwriting...");
+			chimneys = new HashMap<CustomLocation, Chimney>();
+			DataManager.save(chimneys);
 		}
-		List<Object> list = config.getList("block-blacklist");
+		getCommand("chimney").setExecutor(this);
+
+		@SuppressWarnings("unchecked")
+		List<Object> list = (List<Object>) config.getList("block-blacklist");
 		if (list != null) {
 			for (Object o : list) {
 				bblist.add(Byte.parseByte(o.toString()));
 			}
 		}
-
-		System.out.println("Chimneys " + getDescription().getVersion()
-				+ " is enabled");
-	}
-
-	private synchronized Chimney getChimneyAt(int x, int y, int z, UUID worldId) {
-		return chimneys.get(new CustomLocation(x, y, z, worldId));
+		if (chimneys == null) {
+			System.out.println("[Chimneys] Empty/Invalid data file. Creating a new one...");
+			chimneys = new HashMap<CustomLocation, Chimney>();
+			DataManager.save(chimneys);
+		}
+		task = getServer().getScheduler().scheduleAsyncRepeatingTask(this, new ChimneyUpdateTask(this), frequency, frequency);
+		if (task == -1) {
+			System.out.println("[Chimneys] Task scheduling failed, plugin can't work.");
+			getServer().getPluginManager().disablePlugin(this);
+			return;
+		}
+		System.out.println("Chimneys " + getDescription().getVersion() + " is enabled");
 	}
 
 	public synchronized boolean createChimney(Block block, boolean redstone) {
@@ -146,15 +158,21 @@ public class PluginChimney extends JavaPlugin {
 		return false;
 	}
 
-	private synchronized Chimney getChimneyAt(CustomLocation loc) {
-		return getChimneyAt(loc.getX(), loc.getY(), loc.getZ(), loc.getWorld());
+	public synchronized Chimney getChimneyAt(CustomLocation loc) {
+		if (chimneys == null)
+			chimneys = new HashMap<CustomLocation, Chimney>();
+		return chimneys.get(loc);
 	}
 
 	public synchronized void deleteChimney(Block block) {
+		if (chimneys == null)
+			chimneys = new HashMap<CustomLocation, Chimney>();
 		chimneys.remove(new CustomLocation(block));
 	}
 
 	public synchronized Collection<Chimney> getAllChimneys() {
+		if (chimneys == null)
+			chimneys = new HashMap<CustomLocation, Chimney>();
 		return chimneys.values();
 	}
 
@@ -163,12 +181,16 @@ public class PluginChimney extends JavaPlugin {
 	}
 
 	public Material getWand() {
-
+		if (wand == null)
+			wand = Material.STICK;
 		return wand;
 	}
 
 	public synchronized void changeRS(Block b) {
+		if (chimneys == null)
+			chimneys = new HashMap<CustomLocation, Chimney>();
 		Set<CustomLocation> toUpdate = new HashSet<CustomLocation>();
+		toUpdate.add(new CustomLocation(b));
 		toUpdate.add(new CustomLocation(b.getRelative(BlockFace.DOWN)));
 		toUpdate.add(new CustomLocation(b.getRelative(BlockFace.UP)));
 		toUpdate.add(new CustomLocation(b.getRelative(BlockFace.WEST)));
@@ -176,89 +198,74 @@ public class PluginChimney extends JavaPlugin {
 		toUpdate.add(new CustomLocation(b.getRelative(BlockFace.NORTH)));
 		toUpdate.add(new CustomLocation(b.getRelative(BlockFace.SOUTH)));
 		for (CustomLocation loc : toUpdate) {
-			if (getChimneyAt(loc) != null) {
+			if (isChimneyAt(loc) && getChimneyAt(loc).isRedstone()) {
 				Block block = loc.getBlock();
 				Chimney chimney = getChimneyAt(loc);
-				if ((rsDefOn && (block.isBlockPowered()
-						|| block.isBlockIndirectlyPowered() || block
-						.getBlockPower() > 0)) || !rsDefOn) {
+				if ((rsDefOn && (block.isBlockPowered() || block.isBlockIndirectlyPowered() || block.getBlockPower() > 0)) || (!rsDefOn && !block.isBlockPowered())) {
 					chimney.setSmokeCount(smokeCount);
 				} else {
 					chimney.setSmokeCount(0);
 				}
-				updateChimney(loc, chimney);
 			}
 		}
 	}
 
-	private synchronized void updateChimney(CustomLocation loc, Chimney chimney) {
-		chimneys.put(loc, chimney);
+	public boolean isChimneyAt(CustomLocation loc) {
+		if (chimneys != null)
+			return chimneys.containsKey(loc);
+		else {
+			chimneys = new HashMap<CustomLocation, Chimney>();
+			return false;
+		}
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command command,
-			String label, String[] args) {
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(ChatColor.GREEN
-					+ "Chimneys can't be created in console :P .");
+			sender.sendMessage(ChatColor.GREEN + "Chimneys can't be created in console :P .");
 			return true;
 		}
 		Player player = (Player) sender;
 		if (args.length == 0) {
-			sender.sendMessage(ChatColor.RED
-					+ "/chimney [tgt | std] - Creates chimney at your target block(tgt) or block you're standing on(std)");
+			sender.sendMessage(ChatColor.RED + "/chimney [tgt | std] - Creates chimney at your target block(tgt) or block you're standing on(std)");
 		} else if (args.length == 1) {
-			if (args[0].equalsIgnoreCase("help")
-					|| args[0].equalsIgnoreCase("?")) {
-				sender.sendMessage(ChatColor.RED
-						+ "/chimney [tgt | std] - Creates chimney at your target block(tgt) or block you're standing on(std)");
+			if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
+				sender.sendMessage(ChatColor.RED + "/chimney <tgt | std> - Creates chimney at your target block(tgt) or block you're standing on(std)");
+				sender.sendMessage(ChatColor.RED + "/chimney <tgt | std> rs  - Creates a redstone-controlled chimney at your target block(tgt) or block you're standing on(std)");
 				return true;
-			} else if (args[0].equalsIgnoreCase("std")
-					&& perms.has(player, "chimneys.create")) {
-				if (createChimney(
-						player.getLocation().getBlock()
-								.getRelative(BlockFace.DOWN), false))
-					sender.sendMessage(ChatColor.GREEN
-							+ "Chimney was created on block you're standing on");
+			} else if (args[0].equalsIgnoreCase("std") && perms.has(player, "chimneys.create")) {
+				if (createChimney(player.getLocation().getBlock().getRelative(BlockFace.DOWN), false))
+					sender.sendMessage(ChatColor.GREEN + "Chimney was created on block you're standing on");
 				else
-					sender.sendMessage(ChatColor.RED
-							+ "[Chimneys] Can't create chimney there.");
+					sender.sendMessage(ChatColor.RED + "[Chimneys] Can't create chimney there.");
 				return true;
-			} else if (args[0].equalsIgnoreCase("tgt")
-					&& perms.has(player, "chimneys.create")) {
+			} else if (args[0].equalsIgnoreCase("tgt") && perms.has(player, "chimneys.create")) {
 				if (createChimney(player.getTargetBlock(ignored, 15), false))
-					sender.sendMessage(ChatColor.GREEN
-							+ "Chimney was created on block you're aiming on");
+					sender.sendMessage(ChatColor.GREEN + "Chimney was created on block you're aiming on");
 				else
-					sender.sendMessage(ChatColor.RED
-							+ "[Chimneys] Can't create chimney there.");
+					sender.sendMessage(ChatColor.RED + "[Chimneys] Can't create chimney there.");
 				return true;
-			} else if (args[0].equalsIgnoreCase("wand")
-					&& perms.has(player, "chimneys.wand.get")) {
-				player.getInventory().addItem(new ItemStack(getWand()));
-				sender.sendMessage(ChatColor.GREEN
-						+ "There you go chimney wand! (Wand name is: "
-						+ ChatColor.GRAY + getWand().name().toLowerCase() + ")");
+			} else if (args[0].equalsIgnoreCase("wand") && perms.has(player, "chimneys.create.wand")) {
+				if (hasPlayerEnabledWand(player))
+					disableWand(player);
+				else
+					enableWand(player);
+
+				sender.sendMessage(ChatColor.GREEN + "[Chimneys] Your wand is now " + (hasPlayerEnabledWand(player) ? "en" : "dis") + "abled.");
 				return true;
 			}
 		} else if (args.length == 2) {
-			if (args[1].equalsIgnoreCase("rs")
-					&& perms.has(player, "chimneys.create")) {
+			if (args[1].equalsIgnoreCase("rs") && perms.has(player, "chimneys.create")) {
 				if (args[0].equalsIgnoreCase("std")) {
-					if (createChimney(player.getLocation().getBlock()
-							.getRelative(BlockFace.DOWN), true))
-						sender.sendMessage(ChatColor.GREEN
-								+ "Redstone controlled chimney was created on block you're standing on");
+					if (createChimney(player.getLocation().getBlock().getRelative(BlockFace.DOWN), true))
+						sender.sendMessage(ChatColor.GREEN + "Redstone controlled chimney was created on block you're standing on");
 					else
-						sender.sendMessage(ChatColor.RED
-								+ "[Chimneys] Can't create chimney there.");
+						sender.sendMessage(ChatColor.RED + "[Chimneys] Can't create chimney there.");
 				} else if (args[0].equalsIgnoreCase("tgt")) {
 					if (createChimney(player.getTargetBlock(ignored, 15), true))
-						sender.sendMessage(ChatColor.GREEN
-								+ "Redstone controlled chimney was created on block you're aiming on");
+						sender.sendMessage(ChatColor.GREEN + "Redstone controlled chimney was created on block you're aiming on");
 					else
-						sender.sendMessage(ChatColor.RED
-								+ "[Chimneys] Can't create chimney there.");
+						sender.sendMessage(ChatColor.RED + "[Chimneys] Can't create chimney there.");
 				}
 				return true;
 			}
@@ -274,12 +281,23 @@ public class PluginChimney extends JavaPlugin {
 			try {
 				result = Material.valueOf(str.toUpperCase());
 			} catch (Exception e1) {
-				System.out.println("[Chimneys] Unknown item id/name \"" + str
-						+ "\". Using stick.");
+				System.out.println("[Chimneys] Unknown item id/name \"" + str + "\". Using stick.");
 				result = Material.STICK;
 			}
 		}
 		return result;
+	}
+
+	public void enableWand(Player player) {
+		wandPlayers.add(player.getEntityId());
+	}
+
+	public void disableWand(Player player) {
+		wandPlayers.remove(player.getEntityId());
+	}
+
+	public boolean hasPlayerEnabledWand(Player player) {
+		return wandPlayers.contains(player.getEntityId());
 	}
 
 	static {

@@ -2,18 +2,16 @@ name: Chimneys
 main: sk.tomsik68.chimney.PluginChimney
 description: Chimneys
 author: tomsik68 <tomsik68@gmail.com>
-version: 0.33
+version: 0.4
 website: http://dev.bukkit.org/server-mods/chimneys/
 commands:
     chimney:
         description: Create chimneys
         aliases: /ch, /chmn
-        usage: /<command> [std | tgt] [rs]
+        usage: /<command> [std | tgt] [rs] ; /<command> wand
         permission: chimneys.create
 permissions:
     chimneys.create:
         description: Creating chimneys
     chimneys.create.wand:
         description: Creating chimneys using wand
-    chimneys.wand.get:
-        description: Allows you to get wand using /chimney wand

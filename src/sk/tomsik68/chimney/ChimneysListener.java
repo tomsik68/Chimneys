@@ -14,6 +14,8 @@
     along with Chimneys.  If not, see <http://www.gnu.org/licenses/>.*/
 package sk.tomsik68.chimney;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -23,6 +25,8 @@ import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import com.massivecraft.factions.listeners.FactionsPlayerListener;
+
 public class ChimneysListener implements Listener {
 	private final PluginChimney plugin;
 
@@ -31,6 +35,8 @@ public class ChimneysListener implements Listener {
 	}
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void onBlockBreak(BlockBreakEvent event) {
+		if(plugin.isChimneyAt(new CustomLocation(event.getBlock())) && !event.isCancelled())
+			event.getPlayer().sendMessage(ChatColor.GREEN+"[Chimneys] Chimney was removed.");
 		plugin.deleteChimney(event.getBlock());
 	}
 	@EventHandler(priority=EventPriority.MONITOR)
@@ -43,7 +49,13 @@ public class ChimneysListener implements Listener {
 	}
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		if (plugin.perms.has(event.getPlayer(), "chimneys.create.wand") && event.getItem() != null && event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getTypeId() == plugin.getWand().getId()) {
+		if (plugin.hasPlayerEnabledWand(event.getPlayer()) && !event.isCancelled() && plugin.perms.has(event.getPlayer(), "chimneys.create.wand") && event.getItem() != null && event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getTypeId() == plugin.getWand().getId()) {
+			if(Bukkit.getPluginManager().getPlugin("Factions") != null){
+				if(!FactionsPlayerListener.playerCanUseItemHere(event.getPlayer(), event.getClickedBlock().getRelative(event.getBlockFace()).getLocation(), event.getPlayer().getItemInHand().getType(), true)){
+					event.getPlayer().sendMessage(ChatColor.RED+"[Chimneys] You can't create a chimney here, because this is area is not yours.");
+					return;
+				}
+			}
 			plugin.createChimney(event.getClickedBlock(), false);
 			event.setCancelled(true);
 		}

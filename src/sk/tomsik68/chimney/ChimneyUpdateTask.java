@@ -6,7 +6,7 @@
  */
 package sk.tomsik68.chimney;
 
-import java.util.Collection;
+import java.util.HashSet;
 
 public class ChimneyUpdateTask implements Runnable {
 	private final PluginChimney plugin;
@@ -17,9 +17,10 @@ public class ChimneyUpdateTask implements Runnable {
 
 	@Override
 	public void run() {
-		Collection<Chimney> chimneys = plugin.getAllChimneys();
-		for (Chimney chimney : chimneys) {
-			chimney.update();
+		// nothing is more synchronized than 2 separated collections :)
+		HashSet<Chimney> chimneys = new HashSet<Chimney>(plugin.getAllChimneys());
+			for (Chimney chimney : chimneys) {
+				chimney.update();
 		}
 	}
 }
